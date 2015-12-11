@@ -1,6 +1,6 @@
 {
   "name": "easy-charm",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "live-code with event emitters",
   "main": "charm.js",
   "repository": {
@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/elsehow/easy-charm#readme",
   "dependencies": {
-    "hotmop": "0.0.2"
+    "hotmop": "^1.0.0"
   },
   "devDependencies": {
     "kefir": "^3.1.0"

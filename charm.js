@@ -44,18 +44,6 @@ module.exports = function () {
   // the return value of `app`at the time it was saved
   var emitter = new EventEmitter()
 
-  // hotswap overrides `require`
-  // but this will only matter for for `appPath`.
-  // it will cause appPath's require() statement to hot reload!
-  //
-  // `hotswap` here is an event emitter
-  // it will emit:
-  //
-  //   - 'error' (err) -- an error
-  //   - 'swap'  ()    -- notification that appPath was swapped.
-  //
-  var hotswap = require('hotmop')(appPath) 
-
   // fn to remove existing listeners from the emitters
   function removeAllListeners () {
     emitEventPairs.forEach(function (p) {
@@ -83,28 +71,32 @@ module.exports = function () {
       emitter.emit('error', err)
     }
   }
-  
+
+  // `hotswap` here is an event emitter
+  //  will emit events
+  //
+  //   - 'error' (err) -- an error
+  //   - 'swap'  ()    -- notification that appPath was swapped.
+  //
+  var hotswap = require('hotmop')(appPath) 
 
   // that hotswap module overwrites 'require'
   // because we add a module.change_code to it,
   // it will hotswap, and `hotswap` (below) will emit an event 'swap'
-  var a = require(appPath)
-  function startApp () {
-    var v = bootstrap(a)
+  function startApp (fn) {
+    var v = bootstrap(fn)
     emitter.emit('return-val', v)
   }
 
   // we set up the hot-reload functionality here
   // on every new require, we parse the app script for errors
   // if we catch one, we print it instead of crashing!
-  startApp()
+  startApp(require(appPath))
   hotswap.on('error', function (err) {
     emitter.emit('error', err)
     removeAllListeners() // this will effectively taredown the app
   })
-  hotswap.on('swap', function () {
-    startApp()
-  })
+  hotswap.on('swap', startApp)
 
   // return an emitter that emits 'return-val' events on file swap
   return emitter
